@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>ordering.api</id>
+    <version>$version$</version>
+    <title>ordering.api</title>
+    <authors>Vocus</authors>
+    <owners>Vocus</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Place and fulfill orders for internet</description>
+    <copyright>Vocus (c) 2018</copyright>
+  </metadata>
+</package>

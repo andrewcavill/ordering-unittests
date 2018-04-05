@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net462</TargetFramework>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Moq" Version="4.8.2" />
+    <PackageReference Include="Vocus.Common" Version="2.1.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.6.2" />
+    <PackageReference Include="NUnit" Version="3.10.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.10.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Vocus.Ordering.Api\Vocus.Ordering.Api.csproj" />
+    <ProjectReference Include="..\..\src\Vocus.Ordering.Entities\Vocus.Ordering.Entities.csproj" />
+    <ProjectReference Include="..\..\src\Vocus.Ordering.Services\Vocus.Ordering.Services.csproj" />
+    <ProjectReference Include="..\..\src\Vocus.Ordering.Services.Interfaces\Vocus.Ordering.Services.Interfaces.csproj" />
+    <ProjectReference Include="..\..\src\Vocus.Ordering.Repositories\Vocus.Ordering.Repositories.csproj" />
+    <ProjectReference Include="..\..\src\Vocus.Ordering.Repositories.Interfaces\Vocus.Ordering.Repositories.Interfaces.csproj" />
+  </ItemGroup>
+</Project>

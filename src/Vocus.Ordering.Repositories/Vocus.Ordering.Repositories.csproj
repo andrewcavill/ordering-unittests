@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net462</TargetFramework>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Vocus.Common" Version="2.1.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Vocus.Ordering.Entities\Vocus.Ordering.Entities.csproj" />
+    <ProjectReference Include="..\Vocus.Ordering.Repositories.Interfaces\Vocus.Ordering.Repositories.Interfaces.csproj" />
+  </ItemGroup>
+</Project>
