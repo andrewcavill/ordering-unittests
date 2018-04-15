@@ -5,14 +5,15 @@ using Vocus.Ordering.Entities;
 namespace Vocus.Ordering.UnitTests.Entities
 {
     [TestFixture]
-    public class OrderItemsTests
+    public class OrderItemTests
     {
         [TestCase(1, 75, null, 75, TestName = "WhenNoPriceOverrideAndQuantityIs1")]
         [TestCase(2, 75, null, 150, TestName = "WhenNoPriceOverrideAndQuantityIs2")]
         [TestCase(1, 75, 70.95, 70.95, TestName = "WhenHasPriceOverrideAndQuantityIs1")]
         [TestCase(2, 75, 70.95, 141.9, TestName = "WhenHasPriceOverrideAndQuantityIs2")]
-        public void Amount(int quantity, decimal price, decimal? priceOverride, decimal expectedAmount)
+        public void TestAmount(int quantity, decimal price, decimal? priceOverride, decimal expectedAmount)
         {
+            // arrange
             var orderItem = new OrderItem
             {
                 Product = new Product { Price = price },
@@ -20,32 +21,38 @@ namespace Vocus.Ordering.UnitTests.Entities
                 PriceOverride = priceOverride
             };
 
+            // act
             var orderItemAmount = orderItem.Amount();
 
+            // assert
             Assert.AreEqual(expectedAmount, orderItemAmount);
         }
 
         [Test]
-        public void AmountThrowsBusinessLogicExceptionIfProductNotSet()
+        public void TestAmountThrowsBusinessLogicExceptionIfProductNotSet()
         {
+            // arrange
             var orderItem = new OrderItem { Quantity = 1}; // Product is not set
 
+            // act, assert
             Assert.That(() => orderItem.Amount(), Throws.TypeOf<BusinessLogicException>()
                 .With.Message.EqualTo("Product must be set before calculating amount."));
         }
 
         [TestCase(0, TestName = "QuantityIsZero")]
         [TestCase(-1, TestName = "QuantityIsNegative")]
-        public void AmountThrowsBusinessLogicExceptionIfQuantityNotAPositiveInteger(int quantity)
+        public void TestAmountThrowsBusinessLogicExceptionIfQuantityNotPositive(int quantity)
         {
+            // arrange
             var orderItem = new OrderItem
             {
                 Product = new Product { Price = 75 },
-                Quantity = quantity
+                Quantity = quantity // Quantity is set to zero or a negative integer
             };
 
+            // act, assert
             Assert.That(() => orderItem.Amount(), Throws.TypeOf<BusinessLogicException>()
-                .With.Message.EqualTo("Quantity must be set to a positive number before calculating amount."));
+                .With.Message.EqualTo("Quantity must be set to a positive integer before calculating amount."));
         }
     }
 }
