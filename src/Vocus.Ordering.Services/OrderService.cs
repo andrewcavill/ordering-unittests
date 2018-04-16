@@ -10,10 +10,12 @@ namespace Vocus.Ordering.Services
     public class OrderService : IOrderService
     {
         private readonly IOrderRepository _orderRepository;
+        private readonly IEmailRepository _emailService;
 
-        public OrderService(IOrderRepository orderRepository)
+        public OrderService(IOrderRepository orderRepository, IEmailRepository emailService)
         {
             _orderRepository = orderRepository;
+            _emailService = emailService;
         }
 
         public Order GetById(int orderId)
@@ -29,14 +31,8 @@ namespace Vocus.Ordering.Services
         public void Commit(int orderId)
         {
             var order = _orderRepository.GetById(orderId);
-
-            if (order.DateCommitted.HasValue)
-                throw new BusinessLogicException("Order is already committed.");
-
-            if (order.OrderItems == null || !order.OrderItems.Any())
-                throw new BusinessLogicException("Order has no items.");
-
-            order.DateCommitted = DateTime.Now;
+            order.Commit();
+            _emailService.SendOrderCommitEmail(order);
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using Moq;
+﻿using Moq;
 using NUnit.Framework;
 using Vocus.Common.Errors;
 using Vocus.Ordering.Entities;
@@ -12,81 +11,48 @@ namespace Vocus.Ordering.UnitTests.Services
     public class OrderServiceTests
     {
         private OrderService _orderService;
-        private Mock<IOrderRepository> _orderRepository;
+        private Mock<IOrderRepository> _mockOrderRepository;
+        private Mock<IEmailRepository> _mockEmailRepository;
 
         [SetUp]
         public void SetUp()
         {
-            _orderRepository = new Mock<IOrderRepository>();
-            _orderService = new OrderService(_orderRepository.Object);
+            _mockOrderRepository = new Mock<IOrderRepository>();
+            _mockEmailRepository = new Mock<IEmailRepository>();
+            _orderService = new OrderService(_mockOrderRepository.Object, _mockEmailRepository.Object);
         }
 
         [Test]
-        public void CommitIsSuccessful()
+        public void TestCommitIsSuccessful()
         {
             // arrange
-            var order = SetupOrder();
-            order.AddItem(SetupOrderItem());
-            _orderRepository.Setup(x => x.GetById(order.Id)).Returns(order);
+            var orderId = 12345;
+            var mockOrder = new Mock<Order>();
+            _mockOrderRepository.Setup(x => x.GetById(orderId)).Returns(mockOrder.Object);
 
             // act
-            _orderService.Commit(order.Id);
+            _orderService.Commit(orderId);
 
             // assert
-            Assert.False(order.DateCommitted == null);
-            _orderRepository.Verify(x => x.GetById(order.Id), Times.Once);
+            _mockOrderRepository.Verify(x => x.GetById(orderId), Times.Once);
+            mockOrder.Verify(x => x.Commit(), Times.Once);
+            _mockEmailRepository.Verify(x => x.SendOrderCommitEmail(mockOrder.Object), Times.Once);
         }
 
         [Test]
-        public void CommitThrowsBusinessLogicExceptionIfOrderAlreadyCommitted()
+        public void TestCommitThrowsExceptionIfOrderThrowsException()
         {
             // arrange
-            var order = SetupOrder();
-            order.AddItem(SetupOrderItem());
-            order.DateCommitted = DateTime.Now; // Set DateComitted to a non-null value
-            _orderRepository.Setup(x => x.GetById(order.Id)).Returns(order);
+            var orderId = 12345;
+            var mockOrder = new Mock<Order>();
+            mockOrder.Setup(x => x.Commit()).Throws(new BusinessLogicException("A message"));   // Order.Commit() throws an exception
+            _mockOrderRepository.Setup(x => x.GetById(orderId)).Returns(mockOrder.Object);
 
             // act, assert
-            Assert.That(() => _orderService.Commit(order.Id),
-                Throws.TypeOf<BusinessLogicException>().With.Message.EqualTo("Order is already committed."));
-            _orderRepository.Verify(x => x.GetById(order.Id), Times.Once);
-        }
-
-        [Test]
-        public void CommitThrowsBusinessLogicExceptionIfOrderItemsIsEmpty()
-        {
-            // arrange
-            var order = SetupOrder();
-            _orderRepository.Setup(x => x.GetById(order.Id)).Returns(order);
-
-            // act, assert
-            Assert.That(() => _orderService.Commit(order.Id),
-                Throws.TypeOf<BusinessLogicException>().With.Message.EqualTo("Order has no items."));
-            _orderRepository.Verify(x => x.GetById(order.Id), Times.Once);
-        }
-
-        private Order SetupOrder()
-        {
-            var brand = new Brand { Id = 1, BrandKey = "Slingshot", DisplayName = "Slingshot" };
-        
-            return new Order
-            {
-                Id = 123,
-                Brand = brand,
-                DateCreated = DateTime.Now
-            };
-        }
-
-        private OrderItem SetupOrderItem()
-        {
-            var product = new Product { Id = 1, Price = 75, ProductKey = "UFB_100" };
-
-            return new OrderItem
-            {
-                Id = 456,
-                Product = product,
-                Quantity = 1
-            };
+            Assert.That(() => _orderService.Commit(orderId), Throws.TypeOf<BusinessLogicException>().With.Message.EqualTo("A message"));
+            _mockOrderRepository.Verify(x => x.GetById(orderId), Times.Once);
+            mockOrder.Verify(x => x.Commit(), Times.Once);
+            _mockEmailRepository.Verify(x => x.SendOrderCommitEmail(mockOrder.Object), Times.Never);
         }
     }
 }
