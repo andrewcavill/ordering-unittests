@@ -38,21 +38,5 @@ namespace Vocus.Ordering.UnitTests.Entities
             Assert.That(() => orderItem.Amount(), Throws.TypeOf<BusinessLogicException>()
                 .With.Message.EqualTo("Product must be set before calculating amount."));
         }
-
-        [TestCase(0, TestName = "QuantityIsZero")]
-        [TestCase(-1, TestName = "QuantityIsNegative")]
-        public void TestAmountThrowsBusinessLogicExceptionIfQuantityNotPositive(int quantity)
-        {
-            // arrange
-            var orderItem = new OrderItem
-            {
-                Product = new Product { Price = 75 },
-                Quantity = quantity // Quantity is set to zero or a negative integer
-            };
-
-            // act, assert
-            Assert.That(() => orderItem.Amount(), Throws.TypeOf<BusinessLogicException>()
-                .With.Message.EqualTo("Quantity must be set to a positive integer before calculating amount."));
-        }
     }
 }

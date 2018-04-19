@@ -14,7 +14,6 @@ namespace Vocus.Ordering.Entities
         public virtual decimal Amount()
         {
             if (Product == null) throw new BusinessLogicException("Product must be set before calculating amount.");
-            if (Quantity < 1) throw new BusinessLogicException("Quantity must be set to a positive integer before calculating amount.");
 
             return PriceOverride == null ? Quantity * Product.Price : Quantity * PriceOverride.Value;
         }

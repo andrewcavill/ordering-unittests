@@ -62,58 +62,6 @@ namespace Vocus.Ordering.UnitTests.Entities
             Assert.That(() => order.Amount(), Throws.TypeOf<BusinessLogicException>().With.Message.EqualTo("A message"));
         }
 
-        [Test]
-        public void TestCommitIsSuccessful_ShippingIsTenDollarsWhenOrderAmountLessThanOneHundredDollars()
-        {
-            // arrange
-            var order = new Order();
-            order.AddItem(MockOrderItemReturnsAmount(99.99M).Object);
-
-            // act
-            order.Commit();
-
-            // assert
-            Assert.False(order.DateCommitted == null);
-            Assert.AreEqual(10, order.Shipping);
-        }
-
-        [Test]
-        public void TestCommitIsSuccessful_ShippingIsFreeWhenOrderAmountEqualsOneHundredDollars()
-        {
-            // arrange
-            var order = new Order();
-            order.AddItem(MockOrderItemReturnsAmount(100).Object);
-
-            // act
-            order.Commit();
-
-            // assert
-            Assert.False(order.DateCommitted == null);
-            Assert.AreEqual(0, order.Shipping);
-        }
-
-        [Test]
-        public void TestCommitThrowsExceptionWhenOrderAlreadyCommitted()
-        {
-            // arrange
-            var order = new Order();
-            order.AddItem(MockOrderItemReturnsAmount(100).Object);
-            order.DateCommitted = DateTime.Now;
-
-            // act, assert
-            Assert.That(() => order.Commit(), Throws.TypeOf<BusinessLogicException>().With.Message.EqualTo("Order is already committed."));
-        }
-
-        [Test]
-        public void TestCommitThrowsExceptionWhenOrderHasNoItems()
-        {
-            // arrange
-            var order = new Order();
-
-            // act, assert
-            Assert.That(() => order.Commit(), Throws.TypeOf<BusinessLogicException>().With.Message.EqualTo("Order has no items."));
-        }
-
         private Mock<OrderItem> MockOrderItemReturnsAmount(decimal amount)
         {
             var mockItem = new Mock<OrderItem>();

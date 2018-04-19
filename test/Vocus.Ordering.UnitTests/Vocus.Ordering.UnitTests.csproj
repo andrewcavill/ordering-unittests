@@ -5,6 +5,9 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Services\OrderServiceTestsUsingMockOrder.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Moq" Version="4.8.2" />
     <PackageReference Include="Vocus.Common" Version="2.1.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.6.2" />
@@ -18,5 +21,8 @@
     <ProjectReference Include="..\..\src\Vocus.Ordering.Services.Interfaces\Vocus.Ordering.Services.Interfaces.csproj" />
     <ProjectReference Include="..\..\src\Vocus.Ordering.Repositories\Vocus.Ordering.Repositories.csproj" />
     <ProjectReference Include="..\..\src\Vocus.Ordering.Repositories.Interfaces\Vocus.Ordering.Repositories.Interfaces.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
 </Project>

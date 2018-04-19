@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Vocus.Common.Data.Nhibernate.Entities;
-using Vocus.Common.Errors;
 
 namespace Vocus.Ordering.Entities
 {
@@ -28,22 +27,9 @@ namespace Vocus.Ordering.Entities
             return OrderItems.Sum(x => x.Amount());
         }
 
-        public virtual void Commit()
+        public virtual bool IsCommitted()
         {
-            // Check that the order hasn't already been committed
-            if (DateCommitted.HasValue)
-                throw new BusinessLogicException("Order is already committed.");
-
-            // Check that the order has at least one item
-            if (OrderItems == null || !OrderItems.Any())
-                throw new BusinessLogicException("Order has no items.");
-
-            // Set shipping amount - free shipping for orders of $100 or more, otherwise a flat rate of $10
-            if (Amount() < 100)
-                Shipping = 10;
-
-            // Mark the order as having been committed
-            DateCommitted = DateTime.Now;
+            return DateCommitted != null;
         }
     }
 }
