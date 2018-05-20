@@ -7,14 +7,12 @@ namespace Vocus.Ordering.Entities
 {
     public class Order : IdentifiableEntity
     {
-        public virtual string CustomerName { get; set; }
-        public virtual string EmailAddress { get; set; }
         public virtual Brand Brand { get; set; }
+        public virtual decimal Shipping { get; set; } = 0;
         public virtual IList<OrderItem> OrderItems { get; } = new List<OrderItem>();
         public virtual DateTime DateCreated { get; set; } = DateTime.Now;
         public virtual DateTime? DateCommitted { get; set; }
         public virtual DateTime? DateCompleted { get; set; }
-        public virtual Decimal Shipping { get; set; } = 0;
 
         public virtual void AddItem(OrderItem item)
         {
@@ -22,9 +20,14 @@ namespace Vocus.Ordering.Entities
             item.Order = this;
         }
 
-        public virtual decimal Amount()
+        public virtual decimal SubTotal()
         {
             return OrderItems.Sum(x => x.Amount());
+        }
+
+        public virtual decimal Total()
+        {
+            return SubTotal() + Shipping;
         }
 
         public virtual bool IsCommitted()

@@ -14,7 +14,6 @@ namespace Vocus.Ordering.UnitTests.Services
         private OrderService _orderService;
         private Order _order;
         private Mock<IOrderRepository> _mockOrderRepository;
-        private Mock<IEmailRepository> _mockEmailRepository;
 
         [SetUp]
         public void SetUp()
@@ -24,13 +23,11 @@ namespace Vocus.Ordering.UnitTests.Services
             _mockOrderRepository = new Mock<IOrderRepository>();
             _mockOrderRepository.Setup(x => x.GetById(_order.Id)).Returns(_order);
 
-            _mockEmailRepository = new Mock<IEmailRepository>();
-
-            _orderService = new OrderService(_mockOrderRepository.Object, _mockEmailRepository.Object);
+            _orderService = new OrderService(_mockOrderRepository.Object);
         }
 
         [Test]
-        public void TestCommitIsSuccessfulWhenOrderIsNotCommittedAndHasAtLeastOneItem()
+        public void Commit_Succeeds_WhenOrderIsNotCommitted()
         {
             // arrange
             _order.AddItem(SetUpOrderItem(100));    // Add one item to order
@@ -39,59 +36,36 @@ namespace Vocus.Ordering.UnitTests.Services
             _orderService.Commit(_order.Id);
 
             // assert
+            Assert.That(_order.IsCommitted(), Is.True);
             _mockOrderRepository.Verify(x => x.GetById(_order.Id), Times.Once);
-            _mockEmailRepository.Verify(x => x.SendOrderCommitEmail(_order), Times.Once);
-            Assert.True(_order.IsCommitted());
         }
 
         [Test]
-        public void TestShippingIsTenDollarsWhenOrderAmountLessThanOneHundredDollars()
+        public void Commit_ThrowsException_WhenOrderIsAlreadyCommitted()
         {
             // arrange
-            _order.AddItem(SetUpOrderItem(99.99M));     // Order has single item with amount is less than $100
-
-            // act
-            _orderService.Commit(_order.Id);
-
-            // assert
-            Assert.AreEqual(10, _order.Shipping);
-        }
-
-        [Test]
-        public void TestShippingIsFreeWhenOrderAmountEqualsOneHundredDollars()
-        {
-            // arrange
-            _order.AddItem(SetUpOrderItem(100));     // Order has single item with amount of $100
-
-            // act
-            _orderService.Commit(_order.Id);
-
-            // assert
-            Assert.AreEqual(0, _order.Shipping);
-        }
-
-        [Test]
-        public void TestCommitThrowsExceptionWhenOrderAlreadyCommitted()
-        {
-            // arrange
-            _order.AddItem(SetUpOrderItem(100));
             _order.DateCommitted = DateTime.Now;     // Order is already committed
 
-            // act, assert
-            Assert.That(() => _orderService.Commit(_order.Id), Throws.TypeOf<BusinessLogicException>().With.Message.EqualTo("Order is already committed."));
-            _mockEmailRepository.Verify(x => x.SendOrderCommitEmail(_order), Times.Never);
+            // act
+            var action = new TestDelegate(() => _orderService.Commit(_order.Id));
+
+            // assert
+            Assert.That(action, Throws.TypeOf<BusinessLogicException>().With.Message.EqualTo("Order is already committed."));
         }
 
-        [Test]
-        public void TestCommitThrowsExceptionWhenOrderHasNoItems()
+        [TestCase(99.99, 10, TestName = "$10 when sub-total is less than $100")]
+        [TestCase(100, 0, TestName = "free when sub-total is equal to $100")]
+        [TestCase(100.01, 0, TestName = "free when sub-total is greater than $100")]
+        public void Commit_ShippingIs(decimal orderAmount, decimal shippingAmount)
         {
             // arrange
-            // The order created in the SetUp() method does not have any items
+            _order.AddItem(SetUpOrderItem(orderAmount));
 
-            // act, assert
-            Assert.That(() => _orderService.Commit(_order.Id), Throws.TypeOf<BusinessLogicException>().With.Message.EqualTo("Order has no items."));
-            _mockEmailRepository.Verify(x => x.SendOrderCommitEmail(_order), Times.Never);      // Verify email not sent
-            Assert.False(_order.IsCommitted());     // Verify order not set to Committed
+            // act
+            _orderService.Commit(_order.Id);
+
+            // assert
+            Assert.That(_order.Shipping, Is.EqualTo(shippingAmount));
         }
 
         private OrderItem SetUpOrderItem(decimal amount)

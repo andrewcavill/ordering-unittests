@@ -1,5 +1,4 @@
-﻿using System;
-using Vocus.Common.Data.Nhibernate.Entities;
+﻿using Vocus.Common.Data.Nhibernate.Entities;
 using Vocus.Common.Errors;
 
 namespace Vocus.Ordering.Entities
@@ -13,7 +12,9 @@ namespace Vocus.Ordering.Entities
 
         public virtual decimal Amount()
         {
-            if (Product == null) throw new BusinessLogicException("Product must be set before calculating amount.");
+            if (Quantity < 0) throw new BusinessLogicException("Quantity must be greater than or equal to zero.");
+
+            if (Product == null) return 0;
 
             return PriceOverride == null ? Quantity * Product.Price : Quantity * PriceOverride.Value;
         }

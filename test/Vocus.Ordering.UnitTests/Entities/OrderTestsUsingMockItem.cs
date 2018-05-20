@@ -1,7 +1,5 @@
-﻿using System;
-using Moq;
+﻿using Moq;
 using NUnit.Framework;
-using Vocus.Common.Errors;
 using Vocus.Ordering.Entities;
 
 namespace Vocus.Ordering.UnitTests.Entities
@@ -10,69 +8,54 @@ namespace Vocus.Ordering.UnitTests.Entities
     public class OrderTestsUsingMockItem
     {
         [Test]
-        public void TestAmountWithNoItems()
+        public void SubTotal_IsZero_WhenOrderHasNoItems()
         {
             // arrange
             var order = new Order();
 
             // act
-            var amount = order.Amount();
+            var subTotal = order.SubTotal();
 
             // assert
-            Assert.AreEqual(0, amount);
+            Assert.That(subTotal, Is.Zero);
         }
 
         [Test]
-        public void TestAmountWithOneItem()
+        public void SubTotal_IsEqualToItemSubTotal_WhenOrderHasOneItem()
         {
             // arrange
             var order = new Order();
-            order.AddItem(MockOrderItemReturnsAmount(70.95M).Object);
+            var orderItemAmount = 9.95M;
+            order.AddItem(SetupMockOrderItem(orderItemAmount).Object);
 
             // act
-            var amount = order.Amount();
+            var subTotal = order.SubTotal();
 
             // assert
-            Assert.AreEqual(70.95M,amount);
+            Assert.That(subTotal, Is.EqualTo(orderItemAmount));
         }
 
         [Test]
-        public void TestAmountWithTwoItems()
+        public void SubTotal_IsEqualToSumOfItemAmounts_WhenOrderHasTwoItems()
         {
             // arrange
+            var orderItemAmount1 = 9.95M;
+            var orderItemAmount2 = 8.95M;
             var order = new Order();
-            order.AddItem(MockOrderItemReturnsAmount(70.95M).Object);
-            order.AddItem(MockOrderItemReturnsAmount(75.00M).Object);
+            order.AddItem(SetupMockOrderItem(orderItemAmount1).Object);
+            order.AddItem(SetupMockOrderItem(orderItemAmount2).Object);
 
             // act
-            var amount = order.Amount();
+            var subTotal = order.SubTotal();
 
             // assert
-            Assert.AreEqual(145.95M, amount);
+            Assert.That(subTotal, Is.EqualTo(orderItemAmount1 + orderItemAmount2));
         }
 
-        [Test]
-        public void TestAmountThrowsExceptionWhenItemThrowsException()
-        {
-            // arrange
-            var order = new Order();
-            order.AddItem(MockOrderItemThrowsException("A message").Object);
-
-            // act, assert
-            Assert.That(() => order.Amount(), Throws.TypeOf<BusinessLogicException>().With.Message.EqualTo("A message"));
-        }
-
-        private Mock<OrderItem> MockOrderItemReturnsAmount(decimal amount)
+        private Mock<OrderItem> SetupMockOrderItem(decimal amount)
         {
             var mockItem = new Mock<OrderItem>();
             mockItem.Setup(x => x.Amount()).Returns(amount);
-            return mockItem;
-        }
-
-        private Mock<OrderItem> MockOrderItemThrowsException(string message)
-        {
-            var mockItem = new Mock<OrderItem>();
-            mockItem.Setup(x => x.Amount()).Throws(new BusinessLogicException(message));
             return mockItem;
         }
     }

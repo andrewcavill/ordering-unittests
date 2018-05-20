@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Collections.Generic;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Vocus.Ordering.Api.ViewModels;
 using Vocus.Ordering.Entities;
@@ -27,6 +28,13 @@ namespace Vocus.Ordering.Api.Controllers
         public OrderVm GetById(int orderId)
         {
             return _mapper.Map<OrderVm>(_orderService.GetById(orderId));
+        }
+
+        [HttpGet]
+        [Route("uncommitted")]
+        public IList<OrderVm> GetUncommittedOrdersByBrandKey([FromQuery] string brandKey)
+        {
+            return _mapper.Map<IList<OrderVm>>(_orderService.GetUncommittedOrdersByBrandKey(brandKey));
         }
 
         [HttpPost]

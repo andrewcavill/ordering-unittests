@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Moq;
 using NUnit.Framework;
-using Vocus.Common.Errors;
 using Vocus.Ordering.Api.Controllers;
 using Vocus.Ordering.Services.Interfaces;
 
@@ -27,7 +26,7 @@ namespace Vocus.Ordering.UnitTests.Controllers
         }
 
         [Test]
-        public void TestCommitIsSuccessful()
+        public void Commit_CallsOrderService()
         {
             // arrange
             var orderId = 12345;
@@ -37,17 +36,6 @@ namespace Vocus.Ordering.UnitTests.Controllers
 
             // assert
             _mockOrderService.Verify(x => x.Commit(orderId), Times.Once);
-        }
-
-        [Test]
-        public void TestCommitThrowsExceptionWhenServiceThrowsException()
-        {
-            // arrange
-            var orderId = 12345;
-            _mockOrderService.Setup(x => x.Commit(orderId)).Throws(new BusinessLogicException("A message"));
-
-            // act, assert
-            Assert.That(() => _ordersController.Commit(orderId), Throws.TypeOf<BusinessLogicException>().With.Message.EqualTo("A message"));
         }
     }
 }

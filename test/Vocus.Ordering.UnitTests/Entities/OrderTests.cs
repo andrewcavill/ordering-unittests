@@ -1,6 +1,4 @@
-﻿using System;
-using NUnit.Framework;
-using Vocus.Common.Errors;
+﻿using NUnit.Framework;
 using Vocus.Ordering.Entities;
 
 namespace Vocus.Ordering.UnitTests.Entities
@@ -9,20 +7,20 @@ namespace Vocus.Ordering.UnitTests.Entities
     public class OrderTests
     {
         [Test]
-        public void TestAmountWithNoItems()
+        public void SubTotal_IsZero_WhenOrderHasNoItems()
         {
             // arrange
             var order = new Order();
 
             // act
-            var amount = order.Amount();
+            var subTotal = order.SubTotal();
 
             // assert
-            Assert.AreEqual(0, amount);
+            Assert.That(subTotal, Is.Zero);
         }
 
         [Test]
-        public void TestAmountWithOneItem()
+        public void SubTotal_IsEqualToItemAmount_WhenOrderHasOneItem()
         {
             // arrange
             var orderItemAmount = 70.95M;
@@ -30,14 +28,14 @@ namespace Vocus.Ordering.UnitTests.Entities
             order.AddItem(OrderItemReturnsAmount(orderItemAmount));
 
             // act
-            var amount = order.Amount();
+            var subTotal = order.SubTotal();
 
             // assert
-            Assert.AreEqual(orderItemAmount, amount);
+            Assert.That(subTotal, Is.EqualTo(orderItemAmount));
         }
 
         [Test]
-        public void TestAmountWithTwoItems()
+        public void SubTotal_IsEqualToSumOfItemAmounts_WhenOrderHasTwoItems()
         {
             // arrange
             var orderItemAmount1 = 70.95M;
@@ -47,26 +45,13 @@ namespace Vocus.Ordering.UnitTests.Entities
             order.AddItem(OrderItemReturnsAmount(orderItemAmount2));
 
             // act
-            var amount = order.Amount();
+            var subTotal = order.SubTotal();
 
             // assert
-            Assert.AreEqual(orderItemAmount1 + orderItemAmount2, amount);
+            Assert.That(subTotal, Is.EqualTo(orderItemAmount1 + orderItemAmount2));
         }
 
-        [Test]
-        public void TestAmountThrowsExceptionWhenItemThrowsException()
-        {
-            // arrange
-            var order = new Order();
-            order.AddItem(OrderItemWithNoProductThrowsException());
-
-            // act, assert
-            Assert.That(() => order.Amount(), Throws.TypeOf<BusinessLogicException>().With.Message.EqualTo("Product must be set before calculating amount."));
-        }
-
-        
-
-        private OrderItem OrderItemReturnsAmount(decimal amount)
+       private OrderItem OrderItemReturnsAmount(decimal amount)
         {
             return new OrderItem
             {
@@ -76,11 +61,6 @@ namespace Vocus.Ordering.UnitTests.Entities
                     Price = amount
                 }
             };
-        }
-
-        private OrderItem OrderItemWithNoProductThrowsException()
-        {
-            return new OrderItem(); // No product so a call to Amount() will throw exception
         }
     }
 }
