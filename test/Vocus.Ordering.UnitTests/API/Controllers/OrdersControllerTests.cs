@@ -4,7 +4,7 @@ using NUnit.Framework;
 using Vocus.Ordering.Api.Controllers;
 using Vocus.Ordering.Services.Interfaces;
 
-namespace Vocus.Ordering.UnitTests.Controllers
+namespace Vocus.Ordering.UnitTests.API.Controllers
 {
     [TestFixture]
     public class OrdersControllerTests

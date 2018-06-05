@@ -1,9 +1,9 @@
-﻿using NUnit.Framework;
+﻿using Moq;
+using NUnit.Framework;
 using Vocus.Ordering.Entities;
 
 namespace Vocus.Ordering.UnitTests.Entities
 {
-    [TestFixture]
     public class OrderTests
     {
         [Test]
@@ -23,9 +23,10 @@ namespace Vocus.Ordering.UnitTests.Entities
         public void SubTotal_IsEqualToItemAmount_WhenOrderHasOneItem()
         {
             // arrange
-            var orderItemAmount = 70.95M;
             var order = new Order();
-            order.AddItem(OrderItemReturnsAmount(orderItemAmount));
+            var orderItemAmount = 9.95M;
+            var mockOrderItem = SetupMockOrderItem(orderItemAmount);
+            order.AddItem(mockOrderItem.Object);
 
             // act
             var subTotal = order.SubTotal();
@@ -38,11 +39,11 @@ namespace Vocus.Ordering.UnitTests.Entities
         public void SubTotal_IsEqualToSumOfItemAmounts_WhenOrderHasTwoItems()
         {
             // arrange
-            var orderItemAmount1 = 70.95M;
-            var orderItemAmount2 = 75.00M;
+            var orderItemAmount1 = 9.95M;
+            var orderItemAmount2 = 8.95M;
             var order = new Order();
-            order.AddItem(OrderItemReturnsAmount(orderItemAmount1));
-            order.AddItem(OrderItemReturnsAmount(orderItemAmount2));
+            order.AddItem(SetupMockOrderItem(orderItemAmount1).Object);
+            order.AddItem(SetupMockOrderItem(orderItemAmount2).Object);
 
             // act
             var subTotal = order.SubTotal();
@@ -51,16 +52,11 @@ namespace Vocus.Ordering.UnitTests.Entities
             Assert.That(subTotal, Is.EqualTo(orderItemAmount1 + orderItemAmount2));
         }
 
-       private OrderItem OrderItemReturnsAmount(decimal amount)
+        private Mock<OrderItem> SetupMockOrderItem(decimal amount)
         {
-            return new OrderItem
-            {
-                Quantity = 1,
-                Product = new Product
-                {
-                    Price = amount
-                }
-            };
+            var mockItem = new Mock<OrderItem>();
+            mockItem.Setup(x => x.Amount()).Returns(amount);
+            return mockItem;
         }
     }
 }

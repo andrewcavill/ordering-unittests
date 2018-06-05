@@ -11,17 +11,18 @@ namespace Vocus.Ordering.UnitTests.Services
     [TestFixture]
     public class OrderServiceTests
     {
+        private const int OrderId = 12345;
         private OrderService _orderService;
-        private Order _order;
+        private Mock<Order> _order;
         private Mock<IOrderRepository> _mockOrderRepository;
 
         [SetUp]
         public void SetUp()
         {
-            _order = new Order { Id = 12345 };
+            _order = new Mock<Order>();
 
             _mockOrderRepository = new Mock<IOrderRepository>();
-            _mockOrderRepository.Setup(x => x.GetById(_order.Id)).Returns(_order);
+            _mockOrderRepository.Setup(x => x.GetById(OrderId)).Returns(_order.Object);
 
             _orderService = new OrderService(_mockOrderRepository.Object);
         }
@@ -30,27 +31,27 @@ namespace Vocus.Ordering.UnitTests.Services
         public void Commit_Succeeds_WhenOrderIsNotCommitted()
         {
             // arrange
-            _order.AddItem(SetUpOrderItem(100));    // Add one item to order
+            _order.Setup(x => x.IsCommitted()).Returns(false);
+            _order.Setup(x => x.SubTotal()).Returns(50);
 
             // act
-            _orderService.Commit(_order.Id);
+            _orderService.Commit(OrderId);
 
             // assert
-            Assert.That(_order.IsCommitted(), Is.True);
-            _mockOrderRepository.Verify(x => x.GetById(_order.Id), Times.Once);
+            _order.VerifySet(x => x.DateCommitted = It.IsAny<DateTime>());                          // DateCommitted property is set
         }
 
         [Test]
         public void Commit_ThrowsException_WhenOrderIsAlreadyCommitted()
         {
             // arrange
-            _order.DateCommitted = DateTime.Now;     // Order is already committed
+            _order.Setup(x => x.IsCommitted()).Returns(true);
 
             // act
-            var action = new TestDelegate(() => _orderService.Commit(_order.Id));
+            var action = new TestDelegate(() => _orderService.Commit(OrderId));
 
             // assert
-            Assert.That(action, Throws.TypeOf<BusinessLogicException>().With.Message.EqualTo("Order is already committed."));
+            Assert.That(action, Throws.TypeOf<BusinessLogicException>().With.Message.EqualTo("Order is already committed."));   // Exception is thrown
         }
 
         [TestCase(99.99, 10, TestName = "$10 when sub-total is less than $100")]
@@ -59,23 +60,14 @@ namespace Vocus.Ordering.UnitTests.Services
         public void Commit_ShippingIs(decimal orderAmount, decimal shippingAmount)
         {
             // arrange
-            _order.AddItem(SetUpOrderItem(orderAmount));
+            _order.Setup(x => x.IsCommitted()).Returns(false);
+            _order.Setup(x => x.SubTotal()).Returns(orderAmount);
 
             // act
-            _orderService.Commit(_order.Id);
+            _orderService.Commit(OrderId);
 
             // assert
-            Assert.That(_order.Shipping, Is.EqualTo(shippingAmount));
-        }
-
-        private OrderItem SetUpOrderItem(decimal amount)
-        {
-            return new OrderItem
-            {
-                Id = 1,
-                Quantity = 1,
-                Product = new Product { Price = amount}
-            };
+            _order.VerifySet(x => x.Shipping = shippingAmount);
         }
     }
 }
